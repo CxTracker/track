@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:title" content="Cx Tracker">
+    <meta property="og:description" content="Want to stream snipe Ice Poseidon, Sam or Joel in their 24/7 BoatTrip Livestream? <br>
+        Use this site to see their exact location!">
+    <meta property="og:url" content="https://cxtracker.github.io/">
+    <title>Real-Time Cx Tracker</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder@1.13.0/dist/Control.Geocoder.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-control-geocoder@1.13.0/dist/Control.Geocoder.js"></script>
+    <style>
+        #map {
+            height: 90vh;
+            width: 100%;
+        }
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        #header {
+            background-color: #333;
+            color: #fff;
+            padding: 4px;
+            text-align: center;
+        }
+        #footer {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 0px;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            z-index: 9999; 
+        }
+#locationStatus {
+    text-align: center; 
+    position: relative; 
+    width: 100%;
+    height: 100%;
+}
+
+.fullscreen-image {
+    max-width: 100%; 
+    max-height: 100%; 
+    width: auto; 
+    height: auto; 
+}
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #000;
+    color: #fff; 
+}
+#footer {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 0px;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+
+#iconButtons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+}
+.iconOption {
+    margin-right: 10px;
+    cursor: pointer;
+}
+.icon {
+    width: 34px; 
+    height: 34px; 
+    vertical-align: middle;
+}
+.iconLabel {
+    margin-top: 3px;
+    font-size: 12px;
+}
+#madeBy {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 14px;
+}
+#mapContainer {
+    overflow: hidden;
+    position: relative; 
+}
+@media (max-width: 768px) {
+    #mapContainer {
+        max-width: 100%;
+        overflow: hidden;
+        position: relative;
+        height: auto;
+    }
+
+#map {
+    width: 100%;
+    height: 90vh; 
+}
+
+    #iconButtons {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+    }
+
+    .iconOption {
+        margin: 5px;
+    }
+
+    .icon {
+        width: 38px;
+        height: 38px;
+    }
+#footer {
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    padding: 0px;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+}
+    #header h1 {
+        margin: 0; 
+    }
+
+    #currentLocation {
+        font-size: 16px;
+        margin-top: 5px; 
+    }
+         #snapBackButton {
+            background-color: transparent;
+            border: none;
+            cursor: pointer;
+        }
+        #logo-container {
+            position: fixed;
+            top: 7px;
+            right: 10px;
+        }
+
+        #logo-container img {
+            width: 270px; 
+            height: 68px;
+            cursor: pointer;
+    </style>
+</head>
+<body>
+    <div id="logo-container">
+        <a href="https://cxwatcher.github.io/boattrip" target="_blank">
+            <img src="https://i.imgur.com/SqOIt6C.png" alt="Logo">
+        </a>
+    </div>
+    <div id="header">
+        <h1>Real-Time Cx Tracker</h1>
+        <h2 id="currentLocation" style="font-size: 16px;">Current Location:</h2>
+        </div>
+    </div>
+<div id="mapContainer">
+    <div id="map"></div>
+</div>
+<div id="locationStatus">
+    <div id="locationDisabledImage">
+        <img class="fullscreen-image" src="https://i.imgur.com/CZICUyk.png" alt="Location Disabled Image">
+    </div>
+</div>
+    <div id="footer">
+                <div id="iconButtons">
+            <div class="iconOption" onclick="changeIcon('goblin')">
+                <img src="https://cdn.discordapp.com/emojis/733790140840804352.webp" alt="Goblin Icon" class="icon">
+                <p class="iconLabel">Goblin</p>
+            </div>
+            <div class="iconOption" onclick="changeIcon('samice')">
+                <img src="https://i.imgur.com/gUZw1RT.png" alt="Sam + Ice Icon" class="icon">
+                <p class="iconLabel">Sam + Ice</p>
+            </div>
+            <div class="iconOption" onclick="changeIcon('pepper')">
+                <img src="https://cdn.discordapp.com/emojis/1063947065165619240.webp" alt="Pepper Icon" class="icon">
+                <p class="iconLabel">Pepper</p>
+        </div>
+    </div>
+            <button id="snapBackButton" onclick="snapBackToLocation()">
+            <img src="https://i.imgur.com/wNUqC3W.png" alt="Snap Back" style="width: 24px; height: 24px;">
+        </button>
+<button id="toggleTracker">Location History: <span id="trackerState">ON</span></button>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script>
+var locationHistory = [];
+var locationHistoryPolyline = null;
+var hasLoadedLocationHistory = false;
+    var isTrackerActive = true;
+    var toggleButton = document.getElementById('toggleTracker');
+    var trackerStateSpan = document.getElementById('trackerState');
+    var map = L.map('map').setView([0, 0], 18);
+    var marker = null;
+    var currentIcon = 'goblin';
+
+    var goblinIcon = L.icon({
+        iconUrl: 'https://cdn.discordapp.com/emojis/733790140840804352.webp',
+        iconSize: [32, 47],
+        iconAnchor: [16, 32],
+    });
+
+    var samiceIcon = L.icon({
+        iconUrl: 'https://i.imgur.com/gUZw1RT.png',
+        iconSize: [65, 46],
+        iconAnchor: [35, 32],
+    });
+
+    var pepperIcon = L.icon({
+        iconUrl: 'https://cdn.discordapp.com/emojis/1063947065165619240.webp',
+        iconSize: [32, 32],
+        iconAnchor: [16, 32],
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+
+    map.on('click', function (e) {
+        var lat = e.latlng.lat;
+        var lng = e.latlng.lng;
+
+        fetch('https://geocode.maps.co/reverse?lat=' + lat + '&lon=' + lng + '&api_key=658a31faa6dd3794238372fdede6f89')
+            .then(response => response.json())
+            .then(data => {
+                if (data.display_name) {
+                    var popup = L.popup()
+                        .setLatLng([lat, lng])
+                        .setContent(data.display_name)
+                        .openOn(map);
+                } else {
+                    console.error('Error fetching reverse geocoding data');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching reverse geocoding data:', error);
+            });
+    });
+
+    function updateLocation() {
+        fetch('https://bakery.hop.sh/v1/ext/locations/sam')
+          .then(response => response.json())
+          .then(data => {
+              var mapContainer = document.getElementById('mapContainer');
+              var locationStatusElement = document.getElementById('locationStatus');
+              var locationDisabledImage = document.getElementById('locationDisabledImage');
+
+             if (data.success && data.data) {
+                 var lat = parseFloat(data.data.latitude);
+                  var lng = parseFloat(data.data.longitude);
+
+                 if (isTrackerActive) {
+                     locationHistory.push([lat, lng]);
+                 }
+
+                    if (marker === null) {
+                       marker = L.marker([lat, lng], { icon: getSelectedIcon() }).addTo(map);
+                       map.setView([lat, lng]); 
+                   } else {
+                       marker.setLatLng([lat, lng]);
+                       marker.setIcon(getSelectedIcon());
+                  }
+
+                   mapContainer.style.display = 'block';
+                   locationStatusElement.style.display = 'none';
+                   locationDisabledImage.style.display = 'none';
+               } else {
+                   mapContainer.style.display = 'none';
+                   locationStatusElement.style.display = 'block';
+                   locationDisabledImage.style.display = 'block';
+               }
+            })
+            .catch(error => {
+                console.error('Error fetching location:', error);
+            });
+    }
+
+
+
+    updateLocation();
+
+    setInterval(function () {
+    updateLocation();
+    drawLocationHistory();
+}, 2000);
+
+    function changeIcon(iconType) {
+        currentIcon = iconType;
+        updateLocation();
+    }
+
+    function getSelectedIcon() {
+        switch (currentIcon) {
+            case 'goblin':
+                return goblinIcon;
+            case 'samice':
+                return samiceIcon;
+            case 'pepper':
+                return pepperIcon;
+            default:
+                return goblinIcon;
+        }
+    }
+let locationHistoryPromise = null;
+function fetchLocationHistory() {
+    if (!locationHistoryPromise) {
+        locationHistoryPromise = fetch('https://tracker.high420.pro:5000/get_location_data')
+            .then(response => response.text())
+            .then(data => {
+                const lines = data.trim().split('\n');
+                locationHistory = lines.map(line => {
+                    const entry = JSON.parse(line);
+                    return [entry.latitude, entry.longitude];
+                });
+
+                if (locationHistory.length > 1) {
+                    locationHistoryPolyline = L.polyline(locationHistory, { color: 'blue' }).addTo(map);
+                }
+
+                return locationHistory; 
+            })
+            .catch(error => {
+                console.error('Error fetching location history:', error);
+                throw error; 
+            });
+    }
+
+    return locationHistoryPromise;
+}
+
+function drawLocationHistory() {
+    fetchLocationHistory().then(() => {
+        if (isTrackerActive && locationHistory.length > 1) {
+            if (locationHistoryPolyline) {
+                map.removeLayer(locationHistoryPolyline);
+            }
+            locationHistoryPolyline = L.polyline(locationHistory, { color: 'blue' }).addTo(map);
+        } else if (locationHistoryPolyline) {
+            map.removeLayer(locationHistoryPolyline);
+            locationHistoryPolyline = null;
+        }
+    });
+}
+
+
+
+function snapBackToLocation() {
+    if (marker && marker.getLatLng) {
+        var markerPosition = marker.getLatLng();
+        map.setView(markerPosition);
+    }
+}
+
+
+    function updateCurrentAddress() {
+    if (marker) {
+        var lat = marker.getLatLng().lat;
+        var lng = marker.getLatLng().lng;
+
+        var headers = new Headers({
+            'User-Agent': 'CxTracker'
+        });
+
+        var request = new Request('https://geocode.maps.co/reverse?lat=' + lat + '&lon=' + lng + '&api_key=658a31faa6dd3794238372fdede6f89', {
+            method: 'GET',
+            headers: headers
+        });
+
+        fetch(request)
+            .then(response => response.json())
+            .then(data => {
+                if (data.display_name) {
+                    var currentLocationText = 'Current Location: ' + data.display_name;
+                    document.getElementById('currentLocation').textContent = currentLocationText;
+                } else {
+                    console.error('Error fetching reverse geocoding data');
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching reverse geocoding data:', error);
+            });
+    }
+}
+
+    updateCurrentAddress();
+
+    setInterval(updateCurrentAddress, 30000); 
+
+    function toggleTracker() {
+    isTrackerActive = !isTrackerActive;
+
+    if (isTrackerActive) {
+        trackerStateSpan.textContent = 'On';
+    } else {
+        trackerStateSpan.textContent = 'Off';
+    }
+}
+    toggleButton.addEventListener('click', toggleTracker);
+</script>
+
+<div id="madeBy">
+    Made By Rishi Sunak
+</div>
+</body>
+</html>
